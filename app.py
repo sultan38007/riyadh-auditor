@@ -41,7 +41,7 @@ def analyze_pdf(uploaded_file):
         pdf_file = genai.upload_file(tmp_file_path, mime_type="application/pdf")
         
         # 2. تجهيز الموديل
-        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
+        model = genai.GenerativeModel("gemini-pro")
         # 3. التعليمات الصارمة (التي كتبناها سابقاً)
         prompt = """
         بصفتك مهندس تدقيق في أمانة الرياض، قم بتحليل ملف المخطط المرفق بدقة متناهية.
@@ -74,6 +74,7 @@ if uploaded_file is not None:
             st.success("تم الانتهاء من التدقيق!")
             st.markdown("---")
             st.markdown(result)
+
 
 
 
