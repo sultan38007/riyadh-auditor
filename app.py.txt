@@ -1,0 +1,68 @@
+import streamlit as st
+import google.generativeai as genai
+import time
+
+# إعداد الصفحة لتكون نظيفة واحترافية
+st.set_page_config(page_title="المدقق المعماري - أمانة الرياض", layout="wide")
+
+# إخفاء القوائم الجانبية لكي لا يعبث أحد بالإعدادات
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
+# العنوان
+st.title("نظام التدقيق الآلي - رخص البناء")
+st.markdown("### إدارة رخص البناء - أمانة منطقة الرياض")
+st.info("قم برفع مخطط المشروع وسيقوم النظام بمطابقته مع الدليل الموحد وإظهار المخالفات.")
+
+# الدالة الرئيسية (مخفية عن المستخدم)
+def analyze_project(uploaded_file):
+    # جلب المفتاح السري من إعدادات الموقع
+    api_key = st.secrets["GOOGLE_API_KEY"]
+    genai.configure(api_key=api_key)
+    
+    # تعليمات النظام (التي لا يراها أحد غيرك)
+    system_prompt = """
+    أنت مدقق هندسي صارم في أمانة الرياض.
+    لديك ملف مرجعي (الدليل الموحد).
+    قارن المخطط المرفق بالدليل.
+    استخرج: نوع المبنى، الارتدادات، النسب، المواقف.
+    أنشئ جدول مطابقة دقيق: [البند] | [المخطط] | [الدليل] | [الحالة].
+    أظهر المخالفات بوضوح.
+    """
+    
+    model = genai.GenerativeModel('gemini-1.5-pro', system_instruction=system_prompt)
+    
+    # هنا يتم إرسال الملفات للتحليل (محاكاة للتبسيط في هذا الكود المباشر)
+    # ملاحظة: لتحليل الـ PDF الفعلي يحتاج لرفعه لمخزن الملفات في Gemini
+    # ولكن لغرض التطبيق السريع سنعتمد على تحليل الصور إذا كان المخطط صورة، أو الـ PDF
+    
+    # إعداد الملف المرفق
+    file_data = {"mime_type": uploaded_file.type, "data": uploaded_file.getvalue()}
+    
+    # إعداد ملف الدليل (يفترض أنه مرفوع مسبقاً أو يتم رفعه هنا)
+    # للتبسيط: سنرسل المخطط فقط للنموذج ونطلب منه الاعتماد على معرفته أو الملف المرفق
+    
+    response = model.generate_content(["قم بتدقيق هذا المخطط بناء على اشتراطات كود الرياض:", file_data])
+    return response.text
+
+# واجهة المستخدم البسيطة
+uploaded_file = st.file_uploader("ارفع ملف المخطط (صورة أو PDF)", type=['png', 'jpg', 'jpeg', 'pdf'])
+
+if uploaded_file is not None:
+    if st.button("بدء الفحص الآلي"):
+        with st.spinner('جاري قراءة المخطط ومطابقته مع الكود...'):
+            try:
+                # محاكاة الاتصال - يتطلب إعداد المفتاح في الخطوة التالية
+                # result = analyze_project(uploaded_file) 
+                
+                # رسالة مؤقتة لأننا لم نربط المفتاح بعد في الشرح
+                st.warning("يجب إدخال مفتاح API في إعدادات الموقع ليعمل التحليل.")
+                
+            except Exception as e:
+                st.error(f"حدث خطأ: تأكد من إعداد المفتاح السري.")
